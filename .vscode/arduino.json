@@ -1,0 +1,5 @@
+{
+    "board": "arduino:avr:uno",
+    "sketch": "slot_machine.ino",
+    "port": "COM4"
+}
