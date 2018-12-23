@@ -1,5 +1,6 @@
 {
     "board": "arduino:avr:uno",
     "sketch": "slot_machine.ino",
-    "port": "COM4"
+    "port": "COM4",
+    "output": "../ArduinoOutput"
 }

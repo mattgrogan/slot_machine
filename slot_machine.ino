@@ -1,6 +1,70 @@
-#include "reel_stepper.h"
+#include "stepper_motor.h"
+#include "position_stepper.h"
 
-int numberOfSteps = 202;
+int numberOfSteps = 200;
+
+StepperMotor sm1 = StepperMotor(numberOfSteps, 6, 7, 30);
+PositionStepper ps1 = PositionStepper(sm1, 2);
+
+StepperMotor sm2 = StepperMotor(numberOfSteps, 8, 9, 30);
+PositionStepper ps2 = PositionStepper(sm2, 0);
+
+StepperMotor sm3 = StepperMotor(numberOfSteps, 10, 11, 30);
+PositionStepper ps3 = PositionStepper(sm3, 1);
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Step to start");
+  ps1.stepToStart();
+  ps2.stepToStart();
+  ps3.stepToStart();
+
+  delay(2000);
+  ps1.setSteps(201);
+  ps2.setSteps(201);
+  ps3.setSteps(201);
+
+  while (!ps1.isFinished() || !ps2.isFinished() || !ps3.isFinished()) {
+    ps1.step();
+    ps2.step();
+    ps3.step();
+  }
+
+  delay(2000);
+  ps1.setSteps(201);
+  ps2.setSteps(201);
+  ps3.setSteps(201);
+
+  while (!ps1.isFinished() || !ps2.isFinished() || !ps3.isFinished()) {
+    ps1.step();
+    ps2.step();
+    ps3.step();
+  }
+
+
+  delay(2000);
+  ps1.setSteps(201);
+  ps2.setSteps(201);
+  ps3.setSteps(201);
+
+  while (!ps1.isFinished() || !ps2.isFinished() || !ps3.isFinished()) {
+    ps1.step();
+    ps2.step();
+    ps3.step();
+  }
+
+  
+}
+
+void loop() {
+  //  Serial.println(position1.step());
+
+
+
+}
+
+
+/*
 
 ReelStepper motor1 = ReelStepper(numberOfSteps, 6, 7, 2);
 ReelStepper motor2 = ReelStepper(numberOfSteps, 8, 9, 0);
@@ -80,7 +144,7 @@ void loop() {
     pos++;
     Serial.println(pos);
     delay(500);
-    */
+    
     
     Serial.println(reel1Symbols[i]);
     Serial.println(reel1Positions[i]);
@@ -102,7 +166,7 @@ void loop() {
   
 
 }
-
+*/
 
 
 
