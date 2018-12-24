@@ -25,6 +25,12 @@ void PositionStepper::setSteps(int steps) {
     this->motor.setSteps(steps);
 };
 
+void PositionStepper::setPosition(int pos, int revolutions = 0) {
+    this->motor.setSteps(this->motor.steps * (revolutions + 2));
+    this->destPosition = pos;
+    this->revolutionsRemaining = revolutions;
+}
+
 bool PositionStepper::isAtStart() {
 
     bool isAtStart = false;
@@ -43,11 +49,17 @@ bool PositionStepper::isAtStart() {
 int PositionStepper::step() {
     // Returns the position of the stepper motor
 
+    if (this->isFinished()) {
+      return this->position;
+    }
+
     if (this->motor.step()) {
       //Serial.println("Stepping");
         if (this->isAtStart()) {
             //Serial.println("Is at start");
             this->position = 0;
+            this->revolutionsRemaining--;
+            
         } else {
             //Serial.println("Not at start");
             this->position++;
@@ -65,6 +77,6 @@ void PositionStepper::stepToStart() {
 }
 
 bool PositionStepper::isFinished() {
-  return this->motor.isFinished();
+  return this->position == this->destPosition && this->revolutionsRemaining <= 0;
 }
 

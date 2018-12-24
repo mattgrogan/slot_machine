@@ -12,10 +12,10 @@ class StepperMotor {
         void setSteps(int steps);
         int step();
         bool isFinished();
+        int steps;
     private:
         int pin1;
         int pin2;
-        int steps;
         int stepsToMove;
         unsigned long stepDelay;
         unsigned long lastStepTime;

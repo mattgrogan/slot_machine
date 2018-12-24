@@ -12,12 +12,15 @@ class PositionStepper {
         int position = 1000;
         bool readSensorPin();
         void setSteps(int steps);
+        void setPosition(int pos, int revolutions);
         int step();
         void stepToStart();
         bool isFinished();
     private:
         StepperMotor motor;
         int sensorPin;
+        int destPosition;
+        int revolutionsRemaining;
         bool prevReading;
         bool isAtStart();
 };
