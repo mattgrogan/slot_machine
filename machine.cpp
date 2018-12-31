@@ -50,3 +50,52 @@ int SlotMachine::amountBet() {
   return this->_bet;
 }
 
+int SlotMachine::spin() {
+  if (this->placeBet() == 0) {
+    this->_r1 = random(0, N_SYMBOLS);
+    this->_r2 = random(0, N_SYMBOLS);
+    this->_r3 = random(0, N_SYMBOLS);
+    this->_credits += this->payout();
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
+int SlotMachine::payout() {
+  int payout = 0;
+
+  if (this->s1() == this->s2() ||
+      this->s2() == this->s3() ||
+      this->s1() == this->s3()) {
+
+        payout = 5;
+      }
+
+
+  return payout;
+}
+
+int SlotMachine::r1() {
+  return this->_r1;
+}
+
+int SlotMachine::r2() {
+  return this->_r2;
+}
+
+int SlotMachine::r3() {
+  return this->_r3;
+}
+
+char* SlotMachine::s1() {
+  return this->symbols_1[this->_r1];
+}
+
+char* SlotMachine::s2() {
+  return this->symbols_2[this->_r2];
+}
+
+char* SlotMachine::s3() {
+  return this->symbols_3[this->_r3];
+}

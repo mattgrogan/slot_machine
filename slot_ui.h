@@ -10,7 +10,7 @@ const int LCD_ROWS = 4;
 
 class SlotUI {
   public:
-    //SlotUI();
+    SlotUI() {};
     void begin(int credits_addr, int bet_addr, int won_addr);
     void updateCredits(int credits);
     void updateAmountBet(int bet);

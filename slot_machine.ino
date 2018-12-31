@@ -13,10 +13,6 @@ const int buttonPin = 4;
 SlotMachine slotMachine = SlotMachine(0.05, 100);
 SlotUI ui = SlotUI();
 
-//LiquidCrystal_I2C lcd(0x3F, 20, 4);
-
-//String readString;
-
 StepperMotor sm1 = StepperMotor(numberOfSteps, 6, 7, 28);
 PositionStepper ps1 = PositionStepper(sm1, 2);
 
@@ -26,13 +22,7 @@ PositionStepper ps2 = PositionStepper(sm2, 0);
 StepperMotor sm3 = StepperMotor(numberOfSteps, 10, 11, 32);
 PositionStepper ps3 = PositionStepper(sm3, 1);
 
-char* symbols_1[] = {
-  "DOLPHIN", "SEVEN", "CHERRIES", "DOLPHIN", "BELL",
-  "PLUM", "BAR", "DOLPHIN", "WATERMELON", "DOLPHIN",
-  "CHERRIES", "SEVEN", "BELL", "BAR", "DOLPHIN",
-  "SEVEN", "PLUM", "DOLPHIN", "BELL", "PLUM",
-  "BAR"  
-};
+
 
 int stops_1[] = {
   0, 10, 20, 30, 40, 
@@ -42,28 +32,12 @@ int stops_1[] = {
   194
 };
 
-char* symbols_2[] = {
-  "BELL", "PLUM", "WATERMELON", "CHERRIES", "BAR",
-  "PLUM", "WATERMELON", "CHERRIES", "BELL", "PLUM",
-  "DOLPHIN", "CHERRIES", "BELL", "PLUM", "WATERMELON",
-  "CHERRIES", "SEVEN", "CHERRIES", "PLUM", "DOLPHIN",
-  "CHERRIES"
-};
-
 int stops_2[] = {
   2, 13, 23, 33, 43,
   52, 62, 71, 81, 90,
   99, 109, 118, 128, 138,
   146, 156, 166, 176, 185,
   195
-};
-
-char* symbols_3[] = {
-  "CHERRIES", "PLUM", "BELL", "CHERRIES", "PLUM",
-  "SEVEN", "BELL", "DOLPHIN", "CHERRIES", "PLUM",
-  "WATERMELON", "BAR", "BELL", "CHERRIES", "PLUM",
-  "BELL", "CHERRIES", "PLUM", "SEVEN", "BELL",
-  "DOLPHIN"
 };
 
 int stops_3[] = {
@@ -88,12 +62,19 @@ void setup() {
   
 
   Serial.println("Step to start");
+  ui.lcd.clear();
+  ui.lcd.setCursor(0, 0);
+  ui.lcd.print("Initializing...");  
   ps1.stepToStart();
   ps2.stepToStart();
   ps3.stepToStart();
 
   randomSeed(millis());
   pinMode(buttonPin, INPUT_PULLUP);
+
+  ui.lcd.clear();
+  ui.lcd.setCursor(0, 0);
+  ui.lcd.print("Press SPIN");    
 
 }
 
@@ -122,69 +103,73 @@ void loop() {
 }
 */
 
+#define STATE_READY 0
+#define STATE_SPINNING 1
+#define STATE_PAYOUT 2
+
+int currentState = STATE_READY;
+
 void loop() {
 
   // Handle events
+  if (currentState == STATE_READY) {
+    int buttonState = digitalRead(buttonPin);
+    if (buttonState == LOW) {
+      Serial.println("Read button");
+
+       if (slotMachine.spin() == 0) {
+        ps1.setPosition(stops_1[slotMachine.r1()], 1);
+        ps2.setPosition(stops_2[slotMachine.r2()], 2);
+        ps3.setPosition(stops_3[slotMachine.r3()], 3);
+        
+        ui.updateCredits(slotMachine.credits());
+        ui.clearWinnerPaid();
+        ui.lcd.clear();
+        ui.lcd.setCursor(0, 0);
+        ui.lcd.print("Good Luck!");     
+        currentState = STATE_SPINNING;        
+      }
+    }
+  }
 
   // Update game
 
-  // Update display
-
-  // Elapse time
-
-
-  
-  int buttonState = digitalRead(buttonPin);
-  if (buttonState == LOW) {
-    int r1 = random(0, nPositions);
-    int r2 = random(0, nPositions);
-    int r3 = random(0, nPositions);
-
-    ps1.setPosition(stops_1[r1], 1);
-    ps2.setPosition(stops_2[r2], 2);
-    ps3.setPosition(stops_3[r3], 3);
-
-    Serial.println("Good Luck! ");
-    Serial.print(symbols_1[r1]);
-    Serial.print("-");
-    Serial.print(symbols_2[r2]);
-    Serial.print("-");
-    Serial.println(symbols_3[r3]);
-
-    //credits -= 5;
-    slotMachine.placeBet();
-    ui.updateCredits(slotMachine.credits());
- 
-
-    ui.lcd.clear();
-    ui.lcd.setCursor(0, 0);
-    ui.lcd.print("GOOD LUCK!");
-
-    while (!ps1.isFinished() || !ps2.isFinished() || !ps3.isFinished() ) {
-      ps1.step();
-      ps2.step();
-      ps3.step();
+  if (currentState == STATE_SPINNING) {
+    ps1.step();
+    ps2.step();
+    ps3.step();
+    if (ps1.isFinished() && ps2.isFinished() && ps3.isFinished()) {
+      currentState = STATE_PAYOUT;
     }
+  }
 
+  if (currentState == STATE_PAYOUT) {
     ui.lcd.clear();
     ui.lcd.setCursor(0, 0);
     ui.lcd.print("Credits $");
     ui.lcd.print(slotMachine.value());
 
-
     ui.lcd.setCursor(0, 1);
-    ui.lcd.print(symbols_1[r1]);
+    ui.lcd.print(slotMachine.s1());
     ui.lcd.setCursor(0, 2);
-    ui.lcd.print(symbols_2[r2]);
+    ui.lcd.print(slotMachine.s2());
     ui.lcd.setCursor(0, 3);
-    ui.lcd.print(symbols_3[r3]);
-    
+    ui.lcd.print(slotMachine.s3());
+
+    ui.updateCredits(slotMachine.credits());
+    ui.updateWinnerPaid(slotMachine.payout());
+
+
+    delay(5000);
+
+    ui.lcd.clear();
+    ui.lcd.setCursor(0, 0);
+    ui.lcd.print("Press SPIN");    
+    currentState = STATE_READY;
   }
 
-  delay(100);
+  // Elapse time
 
-
-  
 
 }
 
